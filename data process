@@ -1,0 +1,19 @@
+import tensorflow as tf 
+import pandas as pd 
+csv_file = 'heart.csv'
+datas = pd.read_csv(csv_file)
+# 因为有一列数据thal不是数值类型，需要转换这列为数值类型
+datas['thal'] = pd.Categorical(datas['thal'])
+datas['thal'] = datas.thal.cat.codes
+# 创建数据集
+train_x,train_y = datas,datas.pop('target')
+dataset = tf.data.Dataset.from_tensor_slices((train_x.values,train_y.values))
+train_dataset = dataset.shuffle(buffer_size=len(datas)).batch(1)
+# 创建模型
+model = tf.keras.Sequential([
+    tf.keras.layers.Dense(10,activation='relu'),
+    tf.keras.layers.Dense(1,activation='sigmoid')
+])
+model.compile(optimizer='adam',loss='binary_crossentropy',metrics=['accuracy'])
+model.fit(train_dataset,epochs=10)
+
